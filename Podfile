@@ -1,0 +1,5 @@
+platform :ios, '7.0'
+pod 'AFNetworking', '~> 2.0'
+pod 'MBProgressHUD', '~> 0.8'
+pod 'CocoaAsyncSocket', '~> 7.3.5'
+pod 'AFJSONRPCClient', '~> 2.1.1'
