@@ -1,0 +1,6 @@
+.gitignore:
+PopcornTimeRemote.xcworkspace
+Pods
+Podfile.lock
+PopcornTimeRemoteTests
+
