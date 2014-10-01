@@ -1,5 +1,6 @@
 .gitignore
 *.xcworkspace
+PopcornTimeRemoteTests
 Pods
 Podfile.lock
 
