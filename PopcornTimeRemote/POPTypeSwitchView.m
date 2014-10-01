@@ -34,12 +34,12 @@
 
 -(void)setup
 {
-    if(self.titles){
+    if (self.titles) {
         self.options = [[NSMutableArray alloc] init];
         
         float btn_w = self.frame.size.width / self.titles.count;
         
-        for ( NSInteger i = 0; i < [self.titles count]; i++ ){
+        for ( NSInteger i = 0; i < [self.titles count]; i++ ) {
             
             NSString *title = [self.titles objectAtIndex:i];
             
@@ -73,12 +73,11 @@
     
     [self selectAtIndex:index];
     
-    if(self.delegate){
-        if([self.delegate respondsToSelector:@selector(selectedType:index:)]){
+    if (self.delegate) {
+        if ([self.delegate respondsToSelector:@selector(selectedType:index:)]) {
             [self.delegate selectedType:self index:index];
         }
     }
-    
 }
 
 - (void)selectAtIndex:(int)index

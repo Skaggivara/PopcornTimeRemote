@@ -21,7 +21,9 @@
     return self;
 }
 
-- (id)initWithFrameAndTitle:(CGRect)frame title:(NSString *)title filter:(NSString *)filter
+- (id)initWithFrameAndTitle:(CGRect)frame
+                      title:(NSString *)title
+                     filter:(NSString *)filter
 {
     self = [super initWithFrame:frame];
     if (self) {
@@ -44,7 +46,7 @@
     self.title.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     //self.title.layer.borderColor = [UIColor redColor].CGColor;
     self.title.titleLabel.font = [UIFont systemFontOfSize:14];
-    [self.title setTitle:title forState:UIControlStateNormal];
+    [self.title setTitle:[[[title substringToIndex:1] uppercaseString] stringByAppendingString:[title substringFromIndex:1]] forState:UIControlStateNormal];
     [self.title sizeToFit];
     self.title.frame = CGRectMake(self.title.frame.origin.x, self.title.frame.origin.y, self.title.frame.size.width + 10, self.title.frame.size.height);
     [self.title setTitleColor:UIColorFromRGB(kDefaultColor) forState:UIControlStateNormal];
@@ -57,7 +59,7 @@
     self.filter.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     self.filter.titleLabel.font = [UIFont systemFontOfSize:14];
     self.filter.frame = CGRectMake(self.title.frame.size.width, 0, self.frame.size.width * .5, self.frame.size.height);
-    [self.filter setTitle:filter forState:UIControlStateNormal];
+    [self.filter setTitle:[[[filter substringToIndex:1] uppercaseString] stringByAppendingString:[filter substringFromIndex:1]] forState:UIControlStateNormal];
     [self.filter sizeToFit];
     self.filter.frame = CGRectMake(self.filter.frame.origin.x, self.filter.frame.origin.y, self.filter.frame.size.width + 15, self.filter.frame.size.height);
     [self.filter setImage:[UIImage imageNamed:@"filter"] forState:UIControlStateNormal];
@@ -71,8 +73,8 @@
 
 - (void)handleTouch
 {
-    if(self.delegate){
-        if([self.delegate respondsToSelector:@selector(selectedFilter:)]){
+    if (self.delegate) {
+        if ([self.delegate respondsToSelector:@selector(selectedFilter:)]) {
             [self.delegate selectedFilter:self];
         }
     }
@@ -101,14 +103,14 @@
 
 - (void)setFilterName:(NSString *)title
 {
-    [self.filter setTitle:title forState:UIControlStateNormal];
+    [self.filter setTitle:[[[title substringToIndex:1] uppercaseString] stringByAppendingString:[title substringFromIndex:1]] forState:UIControlStateNormal];
     
     [self updateSize];
 }
 
 - (void)setTitleName:(NSString *)title
 {
-    [self.title setTitle:title forState:UIControlStateNormal];
+    [self.title setTitle:[[[title substringToIndex:1] uppercaseString] stringByAppendingString:[title substringFromIndex:1]] forState:UIControlStateNormal];
     [self updateSize];
 }
 

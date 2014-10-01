@@ -24,4 +24,6 @@
 #define kActiveColor 0x2B6ED2
 #define kOtherActiveColor 0xDE1301
 
+#define kBugFix YES;
+
 #endif

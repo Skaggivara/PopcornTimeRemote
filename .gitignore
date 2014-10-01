@@ -1,6 +1,5 @@
-.gitignore:
-PopcornTimeRemote.xcworkspace
+.gitignore
+HydnaChatIOS.xcworkspace
 Pods
 Podfile.lock
-PopcornTimeRemoteTests
 

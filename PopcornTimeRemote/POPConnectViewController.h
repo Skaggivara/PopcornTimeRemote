@@ -14,6 +14,14 @@
 #import "POPFilterSelectView.h"
 #import "POPFilterListView.h"
 
+
+typedef enum {
+    
+    POPCornTimeRemoteTypeMovie,
+    POPCornTimeRemoteTypeSeries
+    
+} POPCornTimeRemoteType;
+
 @interface POPConnectViewController : UIViewController <POPControlViewDelegate, POPFilterSelectViewDelegate, POPTypeSwitchViewDelegate, POPFilterListViewDelegate, UISearchBarDelegate>
 
 @property(strong) POPNetworking *listener;
@@ -38,6 +46,11 @@
 @property(strong) NSArray *genres_tv;
 @property(strong) NSArray *ordering_tv;
 
+@property POPCornTimeRemoteType mode;
+
+//
+@property NSMutableArray *currentViewStack;
+
 //
 
 @property(copy) NSString *host;
@@ -53,6 +66,9 @@
 //
 
 @property BOOL hasSearched;
+
+@property BOOL fixSeriesNavBug;
+@property BOOL fixSeriesNavBugActive;
 
 //
 

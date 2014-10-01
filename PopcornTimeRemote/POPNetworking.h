@@ -15,9 +15,9 @@
 @property(strong) AFJSONRPCClient *listenClient;
 
 
--(void)connect:(NSString *)host port:(int)port user:(NSString *)user password:(NSString *)password;
--(void)send:(NSString *)method params:(NSArray *)params;
--(void)send:(NSString *)method params:(NSArray *)params
+- (void)connect:(NSString *)host port:(int)port user:(NSString *)user password:(NSString *)password;
+- (void)send:(NSString *)method params:(NSArray *)params;
+- (void)send:(NSString *)method params:(NSArray *)params
     success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
     failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
@@ -28,7 +28,7 @@
        success:(void (^)(id responseObject))success
        failure:(void (^)(NSError *error))failure;
 
--(void)findPopcornTime;
+- (void)findPopcornTime;
 + (NSString *)getIPAddress;
 + (int)getIPAddressLastPosition;
 

@@ -33,10 +33,9 @@
 
 - (void)setup
 {
-    
     self.backgroundColor = [UIColor clearColor];
     
-    if (self.filters){
+    if (self.filters) {
         [self build];
     }
     
@@ -54,7 +53,7 @@
 
 - (void)build
 {
-    if(!self.backg){
+    if (!self.backg) {
         self.backg = [UIButton buttonWithType:UIButtonTypeCustom];
         self.backg.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
         self.backg.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.8];
@@ -64,7 +63,7 @@
     
     float margin = 30;
     
-    if(!self.btnContainer){
+    if (!self.btnContainer) {
         self.btnContainer = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width - (margin * 2), self.frame.size.height - (margin * 2))];
     
         self.btnContainer.scrollEnabled = YES;
@@ -75,9 +74,9 @@
     
     float size = 0;
     
-    if(self.btns){
+    if (self.btns) {
        // loop through and
-        for(UIButton *btn in self.btns){
+        for (UIButton *btn in self.btns) {
             [btn removeTarget:self action:@selector(handleDown:) forControlEvents:UIControlEventTouchDown];
             [btn removeTarget:self action:@selector(handleSelect:) forControlEvents:UIControlEventTouchUpInside];
             [btn removeTarget:self action:@selector(handleUp:) forControlEvents:UIControlEventTouchUpOutside];
@@ -90,7 +89,7 @@
     float spacing = 1.0;
     float btn_h = 45;
     
-    for(NSInteger i = 0; i < self.filters.count; i++){
+    for (NSInteger i = 0; i < self.filters.count; i++) {
         
         NSString *text = [self.filters objectAtIndex:i];
         
@@ -112,9 +111,11 @@
     
     size -= spacing;
     
+    float content_size = size;
+    
     float target_h = self.frame.size.height - (margin * 2);
     
-    if (size > target_h){
+    if (size > target_h) {
         self.btnContainer.contentSize = CGSizeMake(self.btnContainer.frame.size.width, size);
         
         float closest_target_h = target_h - fmodf(target_h, (btn_h + spacing));
@@ -123,10 +124,15 @@
     }
     
     self.btnContainer.frame = CGRectMake(0, 0, self.btnContainer.frame.size.width, size);
+    self.btnContainer.bounds = self.btnContainer.frame;
     self.btnContainer.center = CGPointMake(self.frame.size.width * .5, self.frame.size.height * .5);
     self.btnContainer.layer.cornerRadius = 5;
     self.btnContainer.layer.masksToBounds = YES;
-
+    
+    [self.btnContainer setContentOffset:CGPointMake(0,0) animated:NO];
+    [self.btnContainer setContentSize:CGSizeMake(self.btnContainer.frame.size.width, content_size)];
+    
+    [self selectById:0];
 }
 
 - (void)selectById:(int)identifier
@@ -134,8 +140,10 @@
     for (UIButton* btn in self.btns) {
         if (btn.tag == identifier) {
             btn.backgroundColor = UIColorFromRGB(kActiveColor);
+            btn.userInteractionEnabled = NO;
         } else {
             btn.backgroundColor = UIColorFromRGB(kBackgroundColor);
+            btn.userInteractionEnabled = YES;
         }
     }
 }

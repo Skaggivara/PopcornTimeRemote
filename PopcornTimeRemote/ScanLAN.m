@@ -14,11 +14,11 @@
 
 @implementation ScanLAN
 
-- (id)initWithDelegate:(id<ScanLANDelegate>)delegate {
+- (id)initWithDelegate:(id<ScanLANDelegate>)delegate
+{
     NSLog(@"init scanner");
     self = [super init];
-    if(self)
-    {
+    if (self) {
         self.scanned = 0;
         self.ignore = -1;
 		self.delegate = delegate;
@@ -26,8 +26,8 @@
     return self;
 }
 
-- (void)startScan {
-
+- (void)startScan
+{
     self.scanned = 0;
     self.localAddress = [self localIPAddress];
     //This is used to test on the simulator
@@ -70,12 +70,12 @@
     self.currentHostAddressDown = location;
     self.currentHostAddressUp = location;
     
-    if(location == 254){
+    if (location == 254) {
         self.scanDirection = -1;
         self.upComplete = YES;
     }
     
-    if(location == 1){
+    if (location == 1) {
         self.downComplete = YES;
     }
     
@@ -85,9 +85,9 @@
 
 - (void)startScanFromIP:(NSString *)address
 {
-    if([self isIpAddressValid:address]){
+    if ([self isIpAddressValid:address]) {
         NSMutableArray *a = [[address componentsSeparatedByString:@"."] mutableCopy];
-        if(a.count == 4){
+        if (a.count == 4) {
             NSString *last = [NSString stringWithString:[a lastObject]];
             [a removeLastObject];
             NSString *joinedString = [a componentsJoinedByString:@"."];
@@ -98,10 +98,10 @@
 }
 - (void)updateProgress
 {
-    if(self.delegate){
-        if([self.delegate respondsToSelector:@selector(scanLANProgress:)]){
+    if (self.delegate) {
+        if ([self.delegate respondsToSelector:@selector(scanLANProgress:)]) {
             float max = 254.0;
-            if(self.ignore > -1 || self.offsetStart){
+            if (self.ignore > -1 || self.offsetStart) {
                 max = 253.0;
             }
             [self.delegate scanLANProgress:(self.scanned/max)];
@@ -109,21 +109,21 @@
     }
 }
 
-- (void)stopScan {
-
+- (void)stopScan
+{
     [self.timer invalidate];
 }
 
 - (void)pingAddressAt:(int)location
 {
-    if(self.ignore != location){
+    if (self.ignore != location) {
         NSString *address = [NSString stringWithFormat:@"%@%i", self.baseAddress, location];
         [SimplePingHelper ping:address target:self sel:@selector(pingResult:ip:)];
     }
 }
 
-- (void)pingAddress{
-    
+- (void)pingAddress
+{
     int pingAdress;
     
     if (self.offsetStart) { // we started at an offset
@@ -141,7 +141,7 @@
                 }
             }
             
-            if(!self.downComplete){
+            if (!self.downComplete) {
                 self.scanDirection = -1;
             }
             
@@ -150,15 +150,15 @@
             self.currentHostAddressDown--;
             pingAdress = (int)self.currentHostAddressDown;
             
-            if(self.currentHostAddressDown <= 1){
+            if (self.currentHostAddressDown <= 1) {
                 self.downComplete = YES;
                 
-                if(self.upComplete){
+                if (self.upComplete) {
                     [self.timer invalidate];
                 }
             }
 
-            if(!self.upComplete){
+            if (!self.upComplete) {
                 self.scanDirection = 1;
             }
         }
@@ -169,6 +169,7 @@
     }
     
     if (self.ignore != pingAdress) {
+        
         NSString *address = [NSString stringWithFormat:@"%@%i", self.baseAddress, pingAdress];
 
         [SimplePingHelper ping:address target:self sel:@selector(pingResult:ip:)];
@@ -188,11 +189,11 @@
 
 // here we need to know if we are going up or down
 
-- (void)pingResult:(NSNumber*)success ip:(NSString *)ip{
+- (void)pingResult:(NSNumber*)success ip:(NSString *)ip
+{
     self.timerIterationNumber++;
     self.scanned++;
     if (success.boolValue) {
-        //NSLog(@"SUCCESS");
         NSString *deviceIPAddress = [[[[NSString stringWithFormat:@"%@", ip] stringByReplacingOccurrencesOfString:@".0" withString:@"."] stringByReplacingOccurrencesOfString:@".00" withString:@"."] stringByReplacingOccurrencesOfString:@".." withString:@".0."];
         NSString *deviceName = [self getHostFromIPAddress:[[NSString stringWithFormat:@"%@", ip] cStringUsingEncoding:NSASCIIStringEncoding]];
         if(self.delegate){
@@ -201,22 +202,16 @@
             }
         }
     }
-    else {
-        //NSLog(@"FAILURE");
-    }
     
     int max = 254;
     
-    if(self.ignore > -1 || self.offsetStart){
+    if (self.ignore > -1 || self.offsetStart) {
         max = 253;
     }
     
-    //NSLog(@"scanned: %i\n\n", self.scanned);
-    
     if (self.scanned >= max) {
-        if(self.delegate){
-            if([self.delegate respondsToSelector:@selector(scanLANDidFinishScanning)]){
-                //NSLog(@"FINISHED");
+        if (self.delegate) {
+            if ([self.delegate respondsToSelector:@selector(scanLANDidFinishScanning)]) {
                 [self.delegate scanLANDidFinishScanning];
             }
         }
@@ -225,29 +220,25 @@
     [self updateProgress];
 }
 
-- (NSString *)getHostFromIPAddress:(const char*)ipAddress {
+- (NSString *)getHostFromIPAddress:(const char*)ipAddress
+{
     NSString *hostName = nil;
     int error;
     struct addrinfo *results = NULL;
     
     error = getaddrinfo(ipAddress, NULL, NULL, &results);
-    if (error != 0)
-    {
+    if (error != 0) {
         NSLog (@"Could not get any info for the address");
         return nil; // or exit(1);
     }
     
-    for (struct addrinfo *r = results; r; r = r->ai_next)
-    {
+    for (struct addrinfo *r = results; r; r = r->ai_next) {
         char hostname[NI_MAXHOST] = {0};
         error = getnameinfo(r->ai_addr, r->ai_addrlen, hostname, sizeof hostname, NULL, 0 , 0);
-        if (error != 0)
-        {
+        if (error != 0) {
             continue; // try next one
-        }
-        else
-        {
-            NSLog (@"Found hostname: %s", hostname);
+        } else {
+            //NSLog (@"Found hostname: %s", hostname);
             hostName = [NSString stringWithFormat:@"%s", hostname];
             break;
         }
@@ -265,30 +256,30 @@
     NSString *cellAddress = nil;
     
     // retrieve the current interfaces - returns 0 on success
-    if(!getifaddrs(&interfaces)) {
+    if (!getifaddrs(&interfaces)) {
         // Loop through linked list of interfaces
         temp_addr = interfaces;
-        while(temp_addr != NULL) {
+        while (temp_addr != NULL) {
             sa_family_t sa_type = temp_addr->ifa_addr->sa_family;
-            if(sa_type == AF_INET || sa_type == AF_INET6) {
+            if (sa_type == AF_INET || sa_type == AF_INET6) {
                 NSString *name = [NSString stringWithUTF8String:temp_addr->ifa_name];
                 NSString *addr = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)]; // pdp_ip0
                 //NSLog(@"NAME: \"%@\" addr: %@", name, addr); // see for yourself
                 
-                if([name isEqualToString:@"en0"]) {
+                if ([name isEqualToString:@"en0"]) {
                     // Interface is the wifi connection on the iPhone
                     wifiAddress = addr;
-                } else
-                    if([name isEqualToString:@"pdp_ip0"]) {
-                        // Interface is the cell connection on the iPhone
-                        cellAddress = addr;
-                    }
+                } else if([name isEqualToString:@"pdp_ip0"]) {
+                    // Interface is the cell connection on the iPhone
+                    cellAddress = addr;
+                }
             }
             temp_addr = temp_addr->ifa_next;
         }
         // Free memory
         freeifaddrs(interfaces);
     }
+    
     NSString *addr = wifiAddress ? wifiAddress : cellAddress;
     return addr ? addr : @"0.0.0.0";
 }
@@ -303,17 +294,13 @@
     // retrieve the current interfaces - returns 0 on success
     success = getifaddrs(&interfaces);
     
-    if (success == 0)
-    {
+    if (success == 0) {
         temp_addr = interfaces;
         
-        while(temp_addr != NULL)
-        {
+        while (temp_addr != NULL) {
             // check if interface is en0 which is the wifi connection on the iPhone
-            if(temp_addr->ifa_addr->sa_family == AF_INET)
-            {
-                if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"])
-                {
+            if (temp_addr->ifa_addr->sa_family == AF_INET) {
+                if ([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"]) {
                     address = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)];
                     self.netMask = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_netmask)->sin_addr)];
                 }
@@ -328,7 +315,8 @@
     return address;
 }
 
-- (BOOL) isIpAddressValid:(NSString *)ipAddress{
+- (BOOL)isIpAddressValid:(NSString *)ipAddress
+{
     struct in_addr pin;
     int success = inet_aton([ipAddress UTF8String],&pin);
     if (success == 1) return TRUE;

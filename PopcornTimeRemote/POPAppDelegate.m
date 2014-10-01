@@ -47,6 +47,8 @@
     line.backgroundColor = UIColorFromRGB(0x8B8F93);
     
     [self.navigationController.navigationBar addSubview:line];*/
+    
+    [self.window setBackgroundColor:[UIColor blackColor]];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application

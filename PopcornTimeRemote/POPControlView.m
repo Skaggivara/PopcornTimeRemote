@@ -22,7 +22,6 @@
 
 -(void)setup
 {
-    
     self.up = [UIButton buttonWithType:UIButtonTypeCustom];
     self.up.frame = CGRectMake(self.frame.size.width * .25, 0, self.frame.size.width * .5, self.frame.size.height * .25);
     [self.up setImage:[UIImage imageNamed:@"up"] forState:UIControlStateNormal];
@@ -69,7 +68,7 @@
     
     self.enter = [UIButton buttonWithType:UIButtonTypeCustom];
     self.enter.frame = CGRectMake(self.frame.size.width * .25, self.frame.size.height * .25, self.frame.size.width * .5, self.frame.size.height * .5);
-    [self.enter setTitle:@"Enter" forState:UIControlStateNormal];
+    [self.enter setTitle:NSLocalizedString(@"Enter", nil) forState:UIControlStateNormal];
     [self.enter setTitleColor:UIColorFromRGB(kBackgroundColor) forState:UIControlStateNormal];
     [self.enter setBackgroundColor:UIColorFromRGB(kDefaultColor)];
     self.enter.layer.cornerRadius = 5;
@@ -86,7 +85,7 @@
     self.back.layer.borderColor = [UIColor whiteColor].CGColor;
     //self.back.layer.borderWidth = 1;
     //self.back.layer.cornerRadius = 5;
-    [self.back setTitle:@"Back" forState:UIControlStateNormal];
+    [self.back setTitle:NSLocalizedString(@"Back", nil) forState:UIControlStateNormal];
     [self.back setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     self.back.tag = POPControlViewBackCommand;
     [self.back addTarget:self action:@selector(handleCommand:) forControlEvents:UIControlEventTouchUpInside];
@@ -99,7 +98,7 @@
     self.toggleMute.frame = CGRectMake(self.frame.size.width * .75, 0, self.frame.size.width * .25, self.frame.size.height * .25);
     self.toggleMute.layer.borderColor = [UIColor whiteColor].CGColor;
     //self.toggleMute.layer.borderWidth = 1;
-    [self.toggleMute setTitle:@"Mute" forState:UIControlStateNormal];
+    [self.toggleMute setTitle:NSLocalizedString(@"Mute", nil) forState:UIControlStateNormal];
     [self.toggleMute setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     self.toggleMute.tag = POPControlViewMuteCommand;
     [self.toggleMute addTarget:self action:@selector(handleCommand:) forControlEvents:UIControlEventTouchUpInside];
@@ -142,11 +141,11 @@
     [self increaseVolume].enabled = enable;
     [self toggleMute].enabled = enable;
     
-    if(enable){
+    if (enable) {
         [self decreaseVolume].alpha = 1.0;
         [self increaseVolume].alpha = 1.0;
         [self toggleMute].alpha = 1.0;
-    }else{
+    } else {
         [self decreaseVolume].alpha = 0.5;
         [self increaseVolume].alpha = 0.5;
         [self toggleMute].alpha = 0.5;
@@ -157,8 +156,8 @@
 {
     UIButton *btn = (UIButton *)sender;
     
-    if(self.delegate){
-        if([self.delegate respondsToSelector:@selector(selectedCommand:)]){
+    if (self.delegate) {
+        if ([self.delegate respondsToSelector:@selector(selectedCommand:)]) {
             [self.delegate selectedCommand:(POPControlViewCommand)btn.tag];
         }
     }

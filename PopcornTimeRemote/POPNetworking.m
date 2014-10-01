@@ -171,12 +171,15 @@
 
  */
 
--(void)connect:(NSString *)host port:(int)port user:(NSString *)user password:(NSString *)password
+- (void)connect:(NSString *)host
+           port:(int)port
+           user:(NSString *)user
+       password:(NSString *)password
 {
     
     NSString *url = [NSString stringWithFormat:@"%@:%i", host, port];
     
-    if(!contains(url, @"http://")){
+    if (!contains(url, @"http://")) {
         url = [NSString stringWithFormat:@"http://%@", url];
     }
     
@@ -186,7 +189,7 @@
     }
 }
 
--(void)send:(NSString *)method
+- (void)send:(NSString *)method
 {
     [self.client invokeMethod:method
                       success:^(AFHTTPRequestOperation *operation, id responseObject)
@@ -200,27 +203,28 @@
          
      }];
 }
--(void)send:(NSString *)method params:(NSArray *)params
-    success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
-    failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
+- (void)send:(NSString *)method params:(NSArray *)params
+     success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+     failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     [self.client invokeMethod:method
                withParameters:params
                       success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                          if(success){
+                          if (success) {
                               success(operation, responseObject);
                           }
                       }
                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                          if(failure){
+                          if (failure) {
                               failure(operation, error);
                           }
                       }];
 }
 
--(void)send:(NSString *)method params:(NSArray *)params
+-(void)send:(NSString *)method
+     params:(NSArray *)params
 {
-    if(self.client){
+    if (self.client) {
         
         /*
         - (void)invokeMethod:(NSString *)method
@@ -233,16 +237,16 @@
         // Invocation with Parameters and Request ID
         /// Invocation with Parameters and Request ID
         
-        if(params){
-        [self.client invokeMethod:method
-                   withParameters:params
-                          success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                              NSLog(@"method was invoked\n");
-                          }
-                          failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                              NSLog(@"method was NOT invoked: %@\n", error.description);
-                          }];
-        }else{
+        if (params) {
+            [self.client invokeMethod:method
+                       withParameters:params
+                              success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                  NSLog(@"method was invoked\n");
+                              }
+                              failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                  NSLog(@"method was NOT invoked: %@\n", error.description);
+                              }];
+        } else {
         
             [self send:method];
         }
@@ -266,7 +270,7 @@
 {
     NSString *url = [NSString stringWithFormat:@"%@:%i", host, port];
     
-    if(!contains(url, @"http://")){
+    if (!contains(url, @"http://")) {
         url = [NSString stringWithFormat:@"http://%@", url];
     }
     
@@ -277,13 +281,13 @@
     [client invokeMethod:@"getviewstack"
                       success:^(AFHTTPRequestOperation *operation, id responseObject)
      {
-         if(success){
+         if (success) {
              success(responseObject);
          }
          
      } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
          
-         if(failure){
+         if (failure) {
              failure(error);
          }
          
@@ -315,7 +319,7 @@
     [self.listenClient invokeMethod:@"listennotifications"
                  success:^(AFHTTPRequestOperation *operation, id responseObject)
      {
-         if(success){
+         if (success) {
              
              NSLog(@"GOT NEW RESPONSE");
              success(responseObject);
@@ -323,7 +327,7 @@
          
      } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
          
-         if(failure){
+         if (failure) {
              failure(error);
              // error
              NSLog(@"GOT NEW ERROR");
@@ -341,7 +345,8 @@
 
 
 // Get IP Address
-+ (NSString *)getIPAddress {
++ (NSString *)getIPAddress
+{
     NSString *address = @"error";
     struct ifaddrs *interfaces = NULL;
     struct ifaddrs *temp_addr = NULL;
@@ -351,10 +356,10 @@
     if (success == 0) {
         // Loop through linked list of interfaces
         temp_addr = interfaces;
-        while(temp_addr != NULL) {
-            if(temp_addr->ifa_addr->sa_family == AF_INET) {
+        while (temp_addr != NULL) {
+            if (temp_addr->ifa_addr->sa_family == AF_INET) {
                 // Check if interface is en0 which is the wifi connection on the iPhone
-                if([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"]) {
+                if ([[NSString stringWithUTF8String:temp_addr->ifa_name] isEqualToString:@"en0"]) {
                     // Get NSString from C String
                     address = [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)temp_addr->ifa_addr)->sin_addr)];
                 }
@@ -368,12 +373,13 @@
     
 }
 
-+ (int)getIPAddressLastPosition {
++ (int)getIPAddressLastPosition
+{
     NSString *address = [POPNetworking getIPAddress];
     
     NSArray *a = [address componentsSeparatedByString:@"."];
     
-    if(a.count > 0){
+    if (a.count > 0) {
         NSString *last = [a objectAtIndex:(a.count-1)];
         
         return last.intValue;

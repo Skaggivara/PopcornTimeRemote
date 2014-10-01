@@ -18,21 +18,10 @@
 
 @implementation POPConnectViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-        self.host = kPopcornHost;
-        self.port = kPopcornPort;
-        self.user = kPopcornUser;
-        self.pass = kPopcornPass;
-        self.volume = 0.8;
-    }
-    return self;
-}
-
-- (id)initWithHost:(NSString *)host port:(int)port user:(NSString *)user password:(NSString *)password
+- (id)initWithHost:(NSString *)host
+              port:(int)port
+              user:(NSString *)user
+          password:(NSString *)password
 {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
@@ -41,7 +30,12 @@
         self.port = port;
         self.user = user;
         self.pass = password;
+        self.mode = POPCornTimeRemoteTypeMovie;
+        self.currentViewStack = [@[@"main-browser"] mutableCopy];
         self.volume = 0.8;
+        
+        // Remove this once series nav bug is fixed in PopcornTime
+        self.fixSeriesNavBug = kBugFix;
     }
     return self;
 }
@@ -59,14 +53,14 @@
     [self.view addSubview:self.control];
     
     //
-    self.typeSwitch = [[POPTypeSwitchView alloc] initWithFrameAndTitles:CGRectMake(0, 0, self.view.frame.size.width, 44) titles:@[@"Movies", @"TV Series"]];
+    self.typeSwitch = [[POPTypeSwitchView alloc] initWithFrameAndTitles:CGRectMake(0, 0, self.view.frame.size.width, 44) titles:@[NSLocalizedString(@"Movies", nil), NSLocalizedString(@"TV Series", nil)]];
     self.typeSwitch.delegate = self;
     [self.view addSubview:self.typeSwitch];
     
     //
     
     self.playToggle = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.playToggle setTitle:@"Toggle Playstate" forState:UIControlStateNormal];
+    [self.playToggle setTitle:NSLocalizedString(@"Toggle Playstate", nil) forState:UIControlStateNormal];
     [self.playToggle setTitleColor:UIColorFromRGB(kBackgroundColor) forState:UIControlStateNormal];
     [self.playToggle setBackgroundColor:UIColorFromRGB(kDefaultColor)];
     
@@ -80,7 +74,7 @@
     //
     
     self.tvSeriesPrev = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.tvSeriesPrev setTitle:@"Prev season" forState:UIControlStateNormal];
+    [self.tvSeriesPrev setTitle:NSLocalizedString(@"Prev season", nil) forState:UIControlStateNormal];
     self.tvSeriesPrev.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     [self.tvSeriesPrev setTitleColor:UIColorFromRGB(kDefaultColor) forState:UIControlStateNormal];
     self.tvSeriesPrev.frame = CGRectMake(20, 100, 140, 30);
@@ -91,7 +85,7 @@
     
     //
     self.tvSeriesNext = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.tvSeriesNext setTitle:@"Next season" forState:UIControlStateNormal];
+    [self.tvSeriesNext setTitle:NSLocalizedString(@"Next season", nil) forState:UIControlStateNormal];
     self.tvSeriesNext.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
     [self.tvSeriesNext setTitleColor:UIColorFromRGB(kDefaultColor) forState:UIControlStateNormal];
     self.tvSeriesNext.frame = CGRectMake(160, 100, 140, 30);
@@ -102,20 +96,21 @@
     
     //
     
-    self.category = [[POPFilterSelectView alloc] initWithFrameAndTitle:CGRectMake(20, 60, 140, 30) title:@"Genre" filter:@"All"];
+    self.category = [[POPFilterSelectView alloc] initWithFrameAndTitle:CGRectMake(20, 60, 140, 30) title:NSLocalizedString(@"Genre", nil) filter:@"All"];
     self.category.delegate = self;
     
     [self.view addSubview:self.category];
     
     //
     
-    self.sort = [[POPFilterSelectView alloc] initWithFrameAndTitle:CGRectMake(160, 60, 140, 30) title:@"Sort by" filter:@"Popularity"];
+    self.sort = [[POPFilterSelectView alloc] initWithFrameAndTitle:CGRectMake(160, 60, 140, 30) title:NSLocalizedString(@"Sort by", nil) filter:@"Popularity"];
     self.sort.delegate = self;
     
     [self.view addSubview:self.sort];
     
     //
-    self.genres = @[@"All", @"Action", @"Adventure", @"Animation"];
+    self.genres = @[@"All", @"Action", @"Adventure", @"Animation", @"Biography", @"Comedy", @"Crime", @"Documentary", @"Drama", @"Family", @"Fantasy", @"Film-Noir", @"History", @"Horror", @"Music", @"Musical", @"Mystery", @"Romance", @"Sci-Fi", @"Short", @"Sport", @"Thriller", @"War", @"Western"];
+    self.genres_tv = @[@"All", @"Action", @"Adventure", @"Animation", @"Children", @"Comedy", @"Crime", @"Documentary", @"Drama", @"Family", @"Fantasy", @"Game Show", @"Home And Garden", @"Horror", @"Mini Series", @"Mystery", @"News", @"Reality", @"Romance", @"Science Fiction", @"Soap", @"Special Interest", @"Sport", @"Suspense", @"Talk Show", @"Thriller", @"Western"];
     
     
     self.categoryList = [[POPFilterListView alloc] initWithFrameAndFilters:CGRectMake(0, 0, self.navigationController.view.frame.size.width, self.navigationController.view.frame.size.height) filters:self.genres];
@@ -124,8 +119,8 @@
     [self.navigationController.view addSubview:self.categoryList];
     
     //
-    
-    self.ordering = @[@"Popularity", @"Date Added", @"Year", @"Rating"];
+    self.ordering = @[@"Popularity", @"Date", @"Year", @"Rating"];
+    self.ordering_tv = @[@"Popularity", @"Updated", @"Year", @"Name"];
     
     self.sortList = [[POPFilterListView alloc] initWithFrameAndFilters:CGRectMake(0, 0, self.navigationController.view.frame.size.width, self.navigationController.view.frame.size.height) filters:self.ordering];
     self.sortList.delegate = self;
@@ -145,14 +140,13 @@
     
     //
     
-    [self setTitle:@"Popcorn Time Remote"];
+    [self setTitle:NSLocalizedString(@"Popcorn Time Remote", nil)];
 }
 
 
 - (void)handleCover
 {
     [self hideSearch];
-    
     [self hideCover];
 }
 
@@ -185,22 +179,44 @@
     }
 }
 
-- (void)selectedFilter:(POPFilterListView *)filter index:(int)index
+- (void)selectedFilter:(POPFilterListView *)filter
+                 index:(int)index
 {
-    // TODO: check which type is selected, tv or another
+    //
     
     if (filter == self.categoryList) {
-        NSLog(@"genre: %@", [self.genres objectAtIndex:index]);
-        [self.category setFilterName:[self.genres objectAtIndex:index]];
         
-        [self sendCommand:@"filtergenre" params:@[[self.genres objectAtIndex:index]]];
+        if (self.mode == POPCornTimeRemoteTypeMovie){
+            
+            NSLog(@"genre: %@", [self.genres objectAtIndex:index]);
+            [self.category setFilterName:[self.genres objectAtIndex:index]];
         
-    } else if(filter == self.sortList){
-        //NSLog(@"sorting on: %i", index);
-        NSLog(@"sorting: %@", [self.ordering objectAtIndex:index]);
-        [self.sort setFilterName:[self.ordering objectAtIndex:index]];
+            [self sendCommand:@"filtergenre" params:@[[self.genres objectAtIndex:index]]];
+            
+        } else if(self.mode == POPCornTimeRemoteTypeSeries) {
+            
+            NSLog(@"genre: %@", [self.genres_tv objectAtIndex:index]);
+            [self.category setFilterName:[self.genres_tv objectAtIndex:index]];
+            
+            [self sendCommand:@"filtergenre" params:@[[self.genres_tv objectAtIndex:index]]];
+        }
         
-        [self sendCommand:@"filtersorter" params:@[[self.ordering objectAtIndex:index]]];
+    } else if (filter == self.sortList) {
+        
+        if (self.mode == POPCornTimeRemoteTypeMovie){
+            
+            NSLog(@"sorting: %@", [self.ordering objectAtIndex:index]);
+            [self.sort setFilterName:[self.ordering objectAtIndex:index]];
+        
+            [self sendCommand:@"filtersorter" params:@[[self.ordering objectAtIndex:index]]];
+            
+        } else if(self.mode == POPCornTimeRemoteTypeSeries) {
+            
+            NSLog(@"sorting: %@", [self.ordering_tv objectAtIndex:index]);
+            [self.sort setFilterName:[self.ordering_tv objectAtIndex:index]];
+            
+            [self sendCommand:@"filtersorter" params:@[[self.ordering_tv objectAtIndex:index]]];
+        }
     }
 }
 
@@ -213,25 +229,24 @@
 
 - (void)selectedFilter:(POPFilterSelectView *)filter
 {
-    if(filter == self.category){
-        NSLog(@"open category");
+    if (filter == self.category) {
+        
         [self.categoryList show];
-    } else if(filter == self.sort){
-        NSLog(@"open sort");
+        
+    } else if(filter == self.sort) {
+        
         [self.sortList show];
+        
     }
 }
 
 - (void)selectedCommand:(POPControlViewCommand)command
 {
-    switch(command){
+    switch (command) {
+            
         case POPControlViewEnterCommand:
 
             [self sendCommand:@"enter" params:nil];
-            // update view stack
-            
-            //[self updateViewStack:NO];
-            //[self updateViewStackWithDelay:1.0];
             
         break;
         case POPControlViewUpCommand:
@@ -259,8 +274,16 @@
         break;
             
         case POPControlViewBackCommand:
-
-            [self sendCommand:@"back" params:nil];
+            
+            if (!self.fixSeriesNavBugActive) {
+                [self sendCommand:@"back" params:nil];
+            } else {
+                [self sendCommand:@"showslist" params:nil];
+                self.fixSeriesNavBugActive = NO;
+                
+                [self clearSearch];
+                [self hideSearch];
+            }
 
         break;
             
@@ -273,7 +296,7 @@
         case POPControlViewIncreaseVolumeCommand:
             
             self.volume += 0.1;
-            if(self.volume > 1.0){
+            if (self.volume > 1.0) {
                 self.volume = 1.0;
             }
             
@@ -284,7 +307,7 @@
         case POPControlViewDecreaseVolumeCommand:
 
             self.volume -= 0.1;
-            if(self.volume < 0.0){
+            if (self.volume < 0.0) {
                 self.volume = 0.0;
             }
             
@@ -294,7 +317,8 @@
     }
 }
 
-- (void)selectedType:(POPTypeSwitchView *)type index:(int)index
+- (void)selectedType:(POPTypeSwitchView *)type
+               index:(int)index
 {
     if (index == 0) {
         
@@ -302,11 +326,25 @@
         [self.tvSeriesNext setHidden:YES];
         [self.tvSeriesPrev setHidden:YES];
         
+        [self.categoryList updateList:self.genres];
+        [self.sortList updateList:self.ordering];
+        
+        [self.category setFilterName:[self.genres objectAtIndex:0]];
+        [self.sort setFilterName:[self.ordering objectAtIndex:0]];
+        
+        self.mode = POPCornTimeRemoteTypeMovie;
+        
     } else {
         
         [self sendCommand:@"showslist" params:nil];
-        [self.tvSeriesNext setHidden:NO];
-        [self.tvSeriesPrev setHidden:NO];
+        
+        [self.categoryList updateList:self.genres_tv];
+        [self.sortList updateList:self.ordering_tv];
+        
+        [self.category setFilterName:[self.genres_tv objectAtIndex:0]];
+        [self.sort setFilterName:[self.ordering_tv objectAtIndex:0]];
+        
+        self.mode = POPCornTimeRemoteTypeSeries;
     }
     
     [self clearSearch];
@@ -315,14 +353,14 @@
 
 - (void)initializeController
 {
-    [self updateViewStack:NO];
+    [self updateViewStackWithDelay:.5];
     
-    int __block responsCount = 2;
+    int __block responsCount = 4;
     BOOL __block hadError = NO;
     
     [self.listener send:@"getgenres" params:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         
-        NSLog(@"got all the sorters");
+        NSLog(@"got all the genres");
         NSArray *results = (NSArray *)responseObject;
         NSArray *list = [results objectAtIndex:0];
 
@@ -373,19 +411,71 @@
         }
     }];
     
+    [self.listener send:@"getgenres_tv" params:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        NSLog(@"got all the genres tv");
+        NSArray *results = (NSArray *)responseObject;
+        NSArray *list = [results objectAtIndex:0];
+        
+        if (list) {
+            self.genres_tv = [list copy];
+        }
+        
+        responsCount--;
+        if (responsCount == 0) {
+            // we are all done
+            
+        }
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        hadError = YES;
+        responsCount--;
+        if (responsCount == 0) {
+            //
+        }
+    }];
+    
+    [self.listener send:@"getsorters_tv" params:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        NSLog(@"got all the sorters tv");
+        NSArray *results = (NSArray *)responseObject;
+        NSArray *list = [results objectAtIndex:0];
+        
+        if (list) {
+            self.ordering_tv = [list copy];
+        }
+        
+        responsCount--;
+        if (responsCount == 0) {
+            // we are all done
+            
+        }
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        hadError = YES;
+        responsCount--;
+        if (responsCount == 0) {
+            //
+        }
+    }];
+    
+    // Reset to movielist so we know where we are
+    [self sendCommand:@"movieslist" params:nil];
 }
+
 
 - (void)updateViewStackWithDelay:(float)delay
 {
     if (self.viewStackTimer) {
         [self.viewStackTimer invalidate];
-    } else {
-        self.viewStackTimer = [NSTimer scheduledTimerWithTimeInterval:delay
-                                                          target:self
-                                                        selector:@selector(handleViewStackTimer:)
-                                                        userInfo:nil
-                                                         repeats:NO];
     }
+    
+    self.viewStackTimer = [NSTimer scheduledTimerWithTimeInterval:delay
+                                                           target:self
+                                                         selector:@selector(handleViewStackTimer:)
+                                                         userInfo:nil
+                                                          repeats:YES];
+    
 }
 
 - (void)handleViewStackTimer:(NSTimer *)timer
@@ -393,35 +483,99 @@
     [self updateViewStack:NO];
 }
 
+- (BOOL)viewStackHasChanged:(NSArray *)stack
+{
+    if (!self.currentViewStack) {
+        return YES;
+    }
+    
+    if (stack.count != self.currentViewStack.count) {
+        return YES;
+    }
+    
+    for (NSInteger i = 0; i < stack.count; i++) {
+        NSString *view = [self.currentViewStack objectAtIndex:i];
+        NSString *c_view = [stack objectAtIndex:i];
+        if (![view isEqualToString:c_view]) {
+            return YES;
+        }
+    }
+    
+    return NO;
+}
+
+- (void)enableSeasonNav:(BOOL)enable
+{
+    if (enable) {
+        [self.tvSeriesNext setHidden:NO];
+        [self.tvSeriesPrev setHidden:NO];
+    } else {
+        [self.tvSeriesNext setHidden:YES];
+        [self.tvSeriesPrev setHidden:YES];
+    }
+}
+
+- (void)enableVideoControls:(BOOL)enable
+{
+    if (enable) {
+        [self playToggle].alpha = 1;
+        [self.control enableVideoControls:YES];
+    } else {
+        [self playToggle].alpha = 0;
+        [self.control enableVideoControls:NO];
+    }
+}
+
 - (void)handleViewStack:(NSArray *)stack
 {
     
-    // main-browser
-    //  movie-detail
-    
-    
-    NSString *stack_trace = @"VIEW";
-    for(NSString *view in stack){
-        stack_trace = [stack_trace stringByAppendingString:[NSString stringWithFormat:@"- %@", view]];
-    }
-    
-    NSLog(@"%@", stack_trace);
-    
-    if (stack.count == 1) {
-        NSLog(@"We are at main browsing area");
+    if ([self viewStackHasChanged:stack]) {
         
-        [self playToggle].alpha = 0;
-        [self.control enableVideoControls:NO];
+        NSLog(@"STACK HAS CHANGED");
         
-    } else if(stack.count == 2) {
-        NSLog(@"We are one step in");
-        [self playToggle].alpha = 0;
-        [self.control enableVideoControls:NO];
+        self.fixSeriesNavBugActive = NO;
         
-    } else if(stack.count == 3) {
-        NSLog(@"We are playing something");
-        [self playToggle].alpha = 1;
-        [self.control enableVideoControls:YES];
+        [self enableSeasonNav:NO];
+        
+        NSString *current_stack;
+        
+        if (stack.count == 1) {
+            
+            NSLog(@"We are at main browsing area: %@", [stack objectAtIndex:0]);
+            
+            [self enableVideoControls:NO];
+            
+            
+        } else if(stack.count == 2) {
+            NSLog(@"We are 1 step in %@", [stack objectAtIndex:1]);
+            
+            current_stack = [stack objectAtIndex:1];
+            
+            [self enableVideoControls:NO];
+            
+            // Bug fix in PopcornTime
+            if ([current_stack isEqualToString:@"shows-container-contain"]) {
+                
+                if (self.fixSeriesNavBug) {
+                    self.fixSeriesNavBugActive = YES;
+                    NSLog(@"TRIGGERING BUG FIX");
+                }
+                // Show series nav
+                [self enableSeasonNav:YES];
+            }
+            
+        } else if(stack.count == 3) {
+            NSLog(@"We are 2 steps in %@", [stack objectAtIndex:2]);
+            current_stack = [stack objectAtIndex:2];
+            
+            if ([current_stack isEqualToString:@"player"]) {
+                [self enableVideoControls:YES];
+            } else {
+                [self enableVideoControls:NO];
+            }
+        }
+        
+        self.currentViewStack = [stack mutableCopy];
     }
 
 }
@@ -436,7 +590,7 @@
         hud = [MBProgressHUD showHUDAddedTo:self.view.window animated:YES];
         hud.mode = MBProgressHUDModeIndeterminate;
         hud.backgroundColor = [UIColor colorWithWhite:0.0 alpha:.5];
-        hud.labelText = @"Initializing controller...";
+        hud.labelText = NSLocalizedString(@"Initializing controller...", nil);
     
         [hud show:YES];
     }
@@ -448,11 +602,6 @@
         NSArray *stack = (NSArray *)responseObject;
         
         NSArray *stack_list = [stack objectAtIndex:0];
-        
-        /*
-        for (NSString *view in stack_list) {
-            NSLog(@"STACK: %@", view);
-        }*/
         
         [self handleViewStack:stack_list];
         
@@ -472,6 +621,8 @@
 {
     if (self.searchBar) {
         [self.searchBar removeFromSuperview];
+        
+        [self.viewStackTimer invalidate];
     }
 }
 
@@ -529,29 +680,24 @@
 
 - (void)showSearch
 {
-    if(!self.searchBar){
+    if (!self.searchBar) {
         self.searchBar = [[UISearchBar alloc] initWithFrame:self.navigationController.navigationBar.bounds];
         self.searchBar.showsCancelButton = YES;
-        self.searchBar.placeholder = @"Search";
+        self.searchBar.placeholder = NSLocalizedString(@"Search", nil);
         self.searchBar.backgroundColor = UIColorFromRGB(kBackgroundColor);
         [self.navigationController.navigationBar addSubview:self.searchBar];
         self.searchBar.delegate = self;
         [self.searchBar setHidden:NO];
-    }else{
+    } else {
         [self.searchBar setHidden:NO];
     }
-    
-    //self.searchBar.layer.borderColor = [UIColor redColor].CGColor;
-    //self.searchBar.layer.borderWidth = 1;
     
     [self.searchBar becomeFirstResponder];
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
 {
-    NSLog(@"We are searching");
-    
-    if([searchBar.text length] > 0){
+    if ([searchBar.text length] > 0) {
         
         // TODO: do not hide instead, check for clear search
         [self sendCommand:@"filtersearch" params:@[searchBar.text]];
@@ -570,7 +716,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+    
+    //
     
     [self.navigationController.navigationBar setTintColor:UIColorFromRGB(kDefaultColor)];
     self.navigationController.navigationBar.barTintColor = UIColorFromRGB(kBackgroundColor);
@@ -580,110 +727,15 @@
     
     UIBarButtonItem *searchBtn = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search"] style:UIBarButtonItemStylePlain target:self action:@selector(handleSearch)];
     self.navigationItem.rightBarButtonItem = searchBtn;
+    
     //
     
     self.listener = [[POPNetworking alloc] init];
-    
-    //[self.listener findPopcornTime];
     
     [self.listener connect:self.host port:self.port user:kPopcornUser password:kPopcornPass];
     
     [self.navigationItem setHidesBackButton:YES];
     
-    [self listenForChanges];
-    
-}
-
-- (void)listenForChanges
-{
-    /*
-    [self.listener listen:self.host port:self.port user:kPopcornUser password:kPopcornPass success:^(id responseObject) {
-        NSLog(@"MESSAGE FROM NOT ENDING..");
-        [self listenForChanges];
-    } failure:^(NSError *error) {
-        NSLog(@"ERROR FROM NOT ENDING: %@", error.description);
-        // wait a while then restant
-    }];*/
-   
-    /*
-    NSURL *URL = [NSURL URLWithString:@"http://example.com"];
-    AFRocketClient *client = [[AFRocketClient alloc] initWithBaseURL:URL];
-    
-    [client SUBSCRIBE:@"/listennotifications" usingBlock:^(NSArray *operations, NSError *error) {
-        
-        NSLog(@"hello...");
-        for (AFJSONPatchOperation *operation in operations) {
-            switch (operation.type) {
-                case AFJSONAddOperationType:
-                    //[resources addObject:operation.value];
-                    break;
-                default:
-                    break;
-            }
-        }
-    } error:nil];*/
-    
-    //NSMutableData * responseData;
-    //NSURLConnection * connection;
-    
-    
-    NSMutableDictionary *payload = [NSMutableDictionary dictionary];
-    payload[@"jsonrpc"] = @"2.0";
-    payload[@"method"] = @"listennotifications";
-    payload[@"params"] = @[];
-    payload[@"id"] = @"1";
-    
-    //return [self.requestSerializer requestWithMethod:@"POST" URLString:[self.endpointURL absoluteString] parameters:payload error:nil];
-    
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@:%i", self.host, self.port]];
-    
-    self.listenChunks = [[NSMutableData alloc] initWithLength:0] ;
-    
-    NSString *authStr = [NSString stringWithFormat:@"%@:%@", kPopcornUser, kPopcornPass];
-    NSData *authData = [authStr dataUsingEncoding:NSASCIIStringEncoding];
-    NSString *authValue = [NSString stringWithFormat:@"Basic %@", [authData base64EncodedStringWithOptions:80]];
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:300.0];
-    [request setValue:authValue forHTTPHeaderField:@"Authorization"];
-    
-    //[NSJSONSerialization
-    
-    NSError *error;
-    
-    NSData *requestData = [NSJSONSerialization dataWithJSONObject:payload options:0 error:&error];
-  
-    //NSData *requestData = [[payload JSONRepresentation] dataUsingEncoding:NSUTF8StringEncoding];
-    
-    [request setHTTPMethod:@"POST"];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [request setValue:[NSString stringWithFormat:@"%i", (int)[requestData length]] forHTTPHeaderField:@"Content-Length"];
-    [request setHTTPBody: requestData];
-    
-    self.listenConnection = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:YES];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
-    // You may have received an HTTP 200 here, or not...
-    [self.listenChunks setLength:0];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    NSString* aStr = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
-    
-    NSLog(@"This is my first chunk %@", aStr);
-    
-   
-    
-}
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    NSLog(@"Done with chunked response..");
-    //[self listenForChanges];
-}
-
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-    NSLog(@"Something went wrong...%@", error.description);
 }
 
 - (void)didReceiveMemoryWarning
