@@ -1,5 +1,5 @@
 .gitignore
-HydnaChatIOS.xcworkspace
+*.xcworkspace
 Pods
 Podfile.lock
 
