@@ -15,7 +15,7 @@ Use **PopcornTimeRemote.xcworkspace** to open the project instead of **PopcornTi
 
 ## Requirements
 
-This application requires Xcode 5 and iOS 7.0 or later and [CocoaPods](http://cocoapods.org/) installed. The hydna library works with earlier SDK's.
+This application requires Xcode 5 and iOS 7.0 or later and [CocoaPods](http://cocoapods.org/) installed.
 
 ## License
 
