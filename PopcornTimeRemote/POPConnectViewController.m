@@ -10,7 +10,6 @@
 #import "POPControlView.h"
 #import "POPTypeSwitchView.h"
 #import "MBProgressHUD.h"
-//#import "AFRocketClient.h"
 
 @interface POPConnectViewController ()
 
@@ -42,7 +41,6 @@
 
 - (void)loadView
 {
-    // lets build
     self.view = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [self.view setBackgroundColor:UIColorFromRGB(kBackgroundColor)];
     
@@ -53,6 +51,7 @@
     [self.view addSubview:self.control];
     
     //
+    
     self.typeSwitch = [[POPTypeSwitchView alloc] initWithFrameAndTitles:CGRectMake(0, 0, self.view.frame.size.width, 44) titles:@[NSLocalizedString(@"Movies", nil), NSLocalizedString(@"TV Series", nil)]];
     self.typeSwitch.delegate = self;
     [self.view addSubview:self.typeSwitch];
@@ -84,6 +83,7 @@
     [self.view addSubview:self.tvSeriesPrev];
     
     //
+    
     self.tvSeriesNext = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.tvSeriesNext setTitle:NSLocalizedString(@"Next season", nil) forState:UIControlStateNormal];
     self.tvSeriesNext.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
@@ -96,22 +96,24 @@
     
     //
     
-    self.category = [[POPFilterSelectView alloc] initWithFrameAndTitle:CGRectMake(20, 60, 140, 30) title:NSLocalizedString(@"Genre", nil) filter:@"All"];
+    self.category = [[POPFilterSelectView alloc] initWithFrameAndTitle:CGRectMake(20, 60, 140, 30) title:@"Genre" filter:@"All"];
     self.category.delegate = self;
     
     [self.view addSubview:self.category];
     
     //
     
-    self.sort = [[POPFilterSelectView alloc] initWithFrameAndTitle:CGRectMake(160, 60, 140, 30) title:NSLocalizedString(@"Sort by", nil) filter:@"Popularity"];
+    self.sort = [[POPFilterSelectView alloc] initWithFrameAndTitle:CGRectMake(160, 60, 140, 30) title:@"Sort by" filter:@"Popularity"];
     self.sort.delegate = self;
     
     [self.view addSubview:self.sort];
     
     //
+    
     self.genres = @[@"All", @"Action", @"Adventure", @"Animation", @"Biography", @"Comedy", @"Crime", @"Documentary", @"Drama", @"Family", @"Fantasy", @"Film-Noir", @"History", @"Horror", @"Music", @"Musical", @"Mystery", @"Romance", @"Sci-Fi", @"Short", @"Sport", @"Thriller", @"War", @"Western"];
     self.genres_tv = @[@"All", @"Action", @"Adventure", @"Animation", @"Children", @"Comedy", @"Crime", @"Documentary", @"Drama", @"Family", @"Fantasy", @"Game Show", @"Home And Garden", @"Horror", @"Mini Series", @"Mystery", @"News", @"Reality", @"Romance", @"Science Fiction", @"Soap", @"Special Interest", @"Sport", @"Suspense", @"Talk Show", @"Thriller", @"Western"];
     
+    //
     
     self.categoryList = [[POPFilterListView alloc] initWithFrameAndFilters:CGRectMake(0, 0, self.navigationController.view.frame.size.width, self.navigationController.view.frame.size.height) filters:self.genres];
     self.categoryList.delegate = self;
@@ -119,6 +121,7 @@
     [self.navigationController.view addSubview:self.categoryList];
     
     //
+    
     self.ordering = @[@"Popularity", @"Date", @"Year", @"Rating"];
     self.ordering_tv = @[@"Popularity", @"Updated", @"Year", @"Name"];
     
@@ -182,20 +185,16 @@
 - (void)selectedFilter:(POPFilterListView *)filter
                  index:(int)index
 {
-    //
-    
     if (filter == self.categoryList) {
         
         if (self.mode == POPCornTimeRemoteTypeMovie){
             
-            NSLog(@"genre: %@", [self.genres objectAtIndex:index]);
             [self.category setFilterName:[self.genres objectAtIndex:index]];
         
             [self sendCommand:@"filtergenre" params:@[[self.genres objectAtIndex:index]]];
             
         } else if(self.mode == POPCornTimeRemoteTypeSeries) {
             
-            NSLog(@"genre: %@", [self.genres_tv objectAtIndex:index]);
             [self.category setFilterName:[self.genres_tv objectAtIndex:index]];
             
             [self sendCommand:@"filtergenre" params:@[[self.genres_tv objectAtIndex:index]]];
@@ -205,14 +204,12 @@
         
         if (self.mode == POPCornTimeRemoteTypeMovie){
             
-            NSLog(@"sorting: %@", [self.ordering objectAtIndex:index]);
             [self.sort setFilterName:[self.ordering objectAtIndex:index]];
         
             [self sendCommand:@"filtersorter" params:@[[self.ordering objectAtIndex:index]]];
             
         } else if(self.mode == POPCornTimeRemoteTypeSeries) {
             
-            NSLog(@"sorting: %@", [self.ordering_tv objectAtIndex:index]);
             [self.sort setFilterName:[self.ordering_tv objectAtIndex:index]];
             
             [self sendCommand:@"filtersorter" params:@[[self.ordering_tv objectAtIndex:index]]];
@@ -358,9 +355,9 @@
     int __block responsCount = 4;
     BOOL __block hadError = NO;
     
+    // lets get everything
     [self.listener send:@"getgenres" params:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         
-        NSLog(@"got all the genres");
         NSArray *results = (NSArray *)responseObject;
         NSArray *list = [results objectAtIndex:0];
 
@@ -371,23 +368,14 @@
         }
         
         responsCount--;
-        if (responsCount == 0) {
-            // we are all done
-        }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         hadError = YES;
         responsCount--;
-        if(responsCount == 0){
-            //
-        }
     }];
-    
-    // lets get everything
     
     [self.listener send:@"getsorters" params:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         
-        NSLog(@"got all the sorters");
         NSArray *results = (NSArray *)responseObject;
         NSArray *list = [results objectAtIndex:0];
         
@@ -398,22 +386,14 @@
         }
         
         responsCount--;
-        if (responsCount == 0) {
-            // we are all done
-            
-        }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         hadError = YES;
         responsCount--;
-        if (responsCount == 0) {
-            //
-        }
     }];
     
     [self.listener send:@"getgenres_tv" params:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         
-        NSLog(@"got all the genres tv");
         NSArray *results = (NSArray *)responseObject;
         NSArray *list = [results objectAtIndex:0];
         
@@ -422,22 +402,14 @@
         }
         
         responsCount--;
-        if (responsCount == 0) {
-            // we are all done
-            
-        }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         hadError = YES;
         responsCount--;
-        if (responsCount == 0) {
-            //
-        }
     }];
     
     [self.listener send:@"getsorters_tv" params:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         
-        NSLog(@"got all the sorters tv");
         NSArray *results = (NSArray *)responseObject;
         NSArray *list = [results objectAtIndex:0];
         
@@ -446,17 +418,10 @@
         }
         
         responsCount--;
-        if (responsCount == 0) {
-            // we are all done
-            
-        }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         hadError = YES;
         responsCount--;
-        if (responsCount == 0) {
-            //
-        }
     }];
     
     // Reset to movielist so we know where we are
@@ -531,8 +496,6 @@
     
     if ([self viewStackHasChanged:stack]) {
         
-        NSLog(@"STACK HAS CHANGED");
-        
         self.fixSeriesNavBugActive = NO;
         
         [self enableSeasonNav:NO];
@@ -540,8 +503,6 @@
         NSString *current_stack;
         
         if (stack.count == 1) {
-            
-            NSLog(@"We are at main browsing area: %@", [stack objectAtIndex:0]);
             
             [self enableVideoControls:NO];
             
@@ -597,8 +558,6 @@
     
     [self.listener send:@"getviewstack" params:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         
-        NSLog(@"we have view stack");
-        
         NSArray *stack = (NSArray *)responseObject;
         
         NSArray *stack_list = [stack objectAtIndex:0];
@@ -610,7 +569,6 @@
         }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"we could not get view stack");
         if (showHud) {
             [hud hide:YES];
         }
@@ -653,7 +611,6 @@
         
         [self showSearch];
         [self showCover];
-        
     }
 }
 

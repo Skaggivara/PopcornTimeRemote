@@ -226,17 +226,6 @@
 {
     if (self.client) {
         
-        /*
-        - (void)invokeMethod:(NSString *)method
-    withParameters:(id)parameters
-    requestId:(id)requestId
-    success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
-    failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
-        {*/
-        
-        // Invocation with Parameters and Request ID
-        /// Invocation with Parameters and Request ID
-        
         if (params) {
             [self.client invokeMethod:method
                        withParameters:params
@@ -252,14 +241,6 @@
         }
     }
 }
-
-- (void)findPopcornTime
-{
-    // my ip
-    
-    NSLog(@"IP:%@", [POPNetworking getIPAddress]);
-}
-
 
 + (void)validatePopcorn:(NSString *)host
                    port:(int)port
@@ -293,54 +274,6 @@
          
      }];
     
-}
-
-- (void)listen:(NSString *)host
-          port:(int)port
-          user:(NSString *)user
-      password:(NSString *)password
-       success:(void (^)(id responseObject))success
-       failure:(void (^)(NSError *error))failure
-{
-    
-    NSString *url = [NSString stringWithFormat:@"%@:%i", host, port];
-    
-    if (!contains(url, @"http://")) {
-        url = [NSString stringWithFormat:@"http://%@", url];
-    }
-    
-    if (!self.listenClient) {
-        self.listenClient = [AFJSONRPCClient clientWithEndpointURL:[NSURL URLWithString:url]];
-    }
-    
-    [self.listenClient.requestSerializer setAuthorizationHeaderFieldWithUsername:user password:password];
-    [self.listenClient.requestSerializer setTimeoutInterval:300];
-    
-    [self.listenClient invokeMethod:@"listennotifications"
-                 success:^(AFHTTPRequestOperation *operation, id responseObject)
-     {
-         if (success) {
-             
-             NSLog(@"GOT NEW RESPONSE");
-             success(responseObject);
-         }
-         
-     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-         
-         if (failure) {
-             failure(error);
-             // error
-             NSLog(@"GOT NEW ERROR");
-         }
-         
-     }];
-}
-
-- (void)stopListen
-{
-    if (self.listenClient) {
-        //[self.listenClient.client
-    }
 }
 
 

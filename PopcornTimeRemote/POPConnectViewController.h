@@ -40,7 +40,6 @@ typedef enum {
 @property(strong) POPFilterListView *categoryList;
 @property(strong) POPFilterListView *sortList;
 
-// load these
 @property(strong) NSArray *genres;
 @property(strong) NSArray *ordering;
 @property(strong) NSArray *genres_tv;
@@ -48,36 +47,24 @@ typedef enum {
 
 @property POPCornTimeRemoteType mode;
 
-//
 @property NSMutableArray *currentViewStack;
-
-//
 
 @property(copy) NSString *host;
 @property int port;
 @property(copy) NSString *user;
 @property(copy) NSString *pass;
 
-//
-
 @property(strong) NSMutableData *listenChunks;
 @property(strong) NSURLConnection *listenConnection;
-
-//
 
 @property BOOL hasSearched;
 
 @property BOOL fixSeriesNavBug;
 @property BOOL fixSeriesNavBugActive;
 
-//
-
 @property(strong, nonatomic) UISearchBar* searchBar;
 
-//
-
 @property(strong) NSTimer *viewStackTimer;
-
 
 @property float volume;
 

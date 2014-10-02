@@ -21,14 +21,6 @@
     success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
     failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
 
-- (void)listen:(NSString *)host
-          port:(int)port
-          user:(NSString *)user
-      password:(NSString *)password
-       success:(void (^)(id responseObject))success
-       failure:(void (^)(NSError *error))failure;
-
-- (void)findPopcornTime;
 + (NSString *)getIPAddress;
 + (int)getIPAddressLastPosition;
 

@@ -17,7 +17,6 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
     // Override point for customization after application launch.
-    //UIViewController *rootView = [[POPConnectViewController alloc] initWithNibName:nil bundle:nil];
     UIViewController *rootView = [[POPScanViewController alloc] initWithNibName:nil bundle:nil];
     self.navigationController = [[UINavigationController alloc] initWithRootViewController:rootView];
     
@@ -37,16 +36,7 @@
     NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIColor whiteColor], NSForegroundColorAttributeName, nil];
     [[UINavigationBar appearance] setTitleTextAttributes:attributes];
     
-    //[UIApplication sharedApplication].statusBarHidden = YES;
-    
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-    
-    /*
-    UIView *line = [[UIView alloc] initWithFrame:CGRectMake(0, self.navigationController.navigationBar.frame.size.height, self.navigationController.navigationBar.frame.size.width, 0)];
-    
-    line.backgroundColor = UIColorFromRGB(0x8B8F93);
-    
-    [self.navigationController.navigationBar addSubview:line];*/
     
     [self.window setBackgroundColor:[UIColor blackColor]];
 }
